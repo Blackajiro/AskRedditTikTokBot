@@ -18,14 +18,21 @@ def save_text_to_mp3(reddit_obj):
     tts.save(f"assets/mp3/title.mp3")
     length += MP3(f"assets/mp3/title.mp3").info.length
 
-    for idx, comment in track(enumerate(reddit_obj["comments"]), "Saving..."):
-        # ! Stop creating mp3 files if the length is greater than n seconds
+    idx = 0
+    for comment in reddit_obj["comments"]:
+
         if length > int(os.getenv("MAX_SECONDS")):
             break
-        tts = gTTS(text=comment["comment_body"], lang="en")
-        tts.save(f"assets/mp3/{idx}.mp3")
-        length += MP3(f"assets/mp3/{idx}.mp3").info.length
 
-    print_substep("Done", style="bold green")
+        if len(comment["comment_body"]) > int(os.getenv("MAX_COMMENT_CHARS")):
+            continue
+
+        tts = gTTS(text=comment["comment_body"], lang="en")
+        tts.save(f"assets/mp3/{str(idx)}.mp3")
+        length += MP3(f"assets/mp3/{str(idx)}.mp3").info.length
+        idx = idx + 1
+
+    print_substep("Done!", style="bold green")
+
     # ! Return the index so we know how many screenshots of comments we need to make.
     return length, idx

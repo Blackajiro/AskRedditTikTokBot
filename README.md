@@ -17,7 +17,7 @@ Based on elebumm's RedditVideoMakerBot
 
 ## Usage
 
-1. Customize .env with length, allowed subreddits and the background video url
+1. Customize .env
 2. Run `python3 main.py`
 3. Let the script do the magic
 4. Done!

@@ -27,7 +27,7 @@ def chop_background_video(video_length):
     print_substep("Processing background")
     background = VideoFileClip("assets/mp4/background.mp4")
 
-    start_time, end_time = get_start_and_end_times(video_length, background.duration)
+    start_time, end_time = get_start_and_end_times(video_length + 1, background.duration)
     ffmpeg_extract_subclip(
         "assets/mp4/background.mp4",
         start_time,

@@ -1,3 +1,5 @@
+import os
+
 from moviepy.editor import (
     VideoFileClip,
     AudioFileClip,
@@ -7,10 +9,14 @@ from moviepy.editor import (
     CompositeAudioClip,
     CompositeVideoClip,
 )
+import skimage
 from utils.console import print_step
 
-
 W, H = 1080, 1920
+
+
+def blur(image):
+    return skimage.filters.gaussian(image.astype(float), sigma=int(os.getenv("GAUSSIAN_BLUR_SIGMA")))
 
 
 def make_final_video(number_of_clips):
@@ -20,10 +26,12 @@ def make_final_video(number_of_clips):
 
     background_clip = (
         VideoFileClip("assets/mp4/clip.mp4")
-        .without_audio()
-        .resize(height=H)
-        .crop(x1=1166.6, y1=0, x2=2246.6, y2=1920)
+            .without_audio()
+            .resize(height=H)
+            .crop(x1=1166.6, y1=0, x2=2246.6, y2=1920)
+            .fl_image(blur)
     )
+
     # Gather all audio clips
     audio_clips = []
     for i in range(0, number_of_clips):
@@ -37,16 +45,16 @@ def make_final_video(number_of_clips):
     for i in range(0, number_of_clips):
         image_clips.append(
             ImageClip(f"assets/png/comment_{i}.png")
-            .set_duration(audio_clips[i + 1].duration)
-            .set_position("center")
-            .resize(width=W - 100),
+                .set_duration(audio_clips[i + 1].duration)
+                .set_position("center")
+                .resize(width=W - 100),
         )
     image_clips.insert(
         0,
         ImageClip(f"assets/png/title.png")
-        .set_duration(audio_clips[0].duration)
-        .set_position("center")
-        .resize(width=W - 100),
+            .set_duration(audio_clips[0].duration)
+            .set_position("center")
+            .resize(width=W - 100),
     )
     image_concat = concatenate_videoclips(image_clips).set_position(
         ("center", "center")
