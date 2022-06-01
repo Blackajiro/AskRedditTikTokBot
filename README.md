@@ -12,7 +12,7 @@ Based on elebumm's RedditVideoMakerBot
 ## Installation
 
 1. Clone this repository
-2. Rename `.env.template` to `.env` and replace all values with the appropriate fields. To get Reddit keys (**required**), visit [the Reddit Apps page.](https://www.reddit.com/prefs/apps). Set up a script, enter localhost:8080 as uri and copy user and secret.
+2. Rename `.env.template` to `.env` and replace all values with the appropriate fields. To get Reddit keys (**required**), visit [the Reddit Apps page.](https://www.reddit.com/prefs/apps). Set up a script, enter http://localhost:8080 as uri and copy user and secret.
 3. Run `pip3 install -r requirements.txt`
 
 ## Usage

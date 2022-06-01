@@ -3,7 +3,6 @@ import sys
 from utils.console import print_markdown, print_step, print_substep
 import praw
 import random
-from dotenv import load_dotenv
 import os
 import json
 
@@ -12,7 +11,7 @@ def get_threads():
     print_step("Getting threads")
 
     content = {}
-    load_dotenv()
+
     reddit = praw.Reddit(
         client_id=os.getenv("REDDIT_CLIENT_ID"),
         client_secret=os.getenv("REDDIT_CLIENT_SECRET"),

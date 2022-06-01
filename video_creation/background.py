@@ -13,8 +13,8 @@ def get_start_and_end_times(video_length, length_of_clip):
 
 
 def download_background():
+    print_step("Background video")
     if not Path("assets/mp4/background.mp4").is_file():
-        print_step("Background video")
         print_substep("Downloading background, this may take a while...")
         YouTube(os.getenv("BACKGROUND_VIDEO_URL")).streams.filter(
             res="720p"
@@ -22,6 +22,27 @@ def download_background():
             "assets/mp4",
             filename="background.mp4",
         )
+    else:
+        print_substep("Background found, download not needed")
+
+    print_substep("Done!", style="bold green")
+
+
+def download_background_audio():
+    print_step("Background audio")
+    if not Path("assets/mp3/background_audio.mp3").is_file():
+        print_substep("Downloading background audio, this may take a while...")
+        YouTube(os.getenv('BACKGROUND_AUDIO_URL')).streams.filter(
+            only_audio=True
+        ).first().download(
+            "assets/mp3",
+            filename="background_audio.mp3",
+        )
+    else:
+        print_substep("Background audio found, download not needed")
+
+    print_substep("Done!", style="bold green")
+
 
 def chop_background_video(video_length):
     print_substep("Processing background")

@@ -1,3 +1,5 @@
+import os
+
 from playwright.sync_api import sync_playwright
 from pathlib import Path
 from rich.progress import track
@@ -28,11 +30,14 @@ def download_screenshots_of_reddit_posts(reddit_object, screenshot_num):
             path="assets/png/title.png"
         )
 
-        for idx, comment in track(
-            enumerate(reddit_object["comments"]), "Downloading screenshots"
-        ):
+        print_substep("Downloading screenshots")
 
-            # Stop if we have reached the screenshot_num
+        idx = 0
+        for comment in reddit_object["comments"]:
+
+            if len(comment["comment_body"]) > int(os.getenv("MAX_COMMENT_CHARS")):
+                continue
+
             if idx >= screenshot_num:
                 break
 
@@ -43,5 +48,7 @@ def download_screenshots_of_reddit_posts(reddit_object, screenshot_num):
             page.locator(f"#t1_{comment['comment_id']}").screenshot(
                 path=f"assets/png/comment_{idx}.png"
             )
+
+            idx += 1
 
         print_substep("Done!", style="bold green")

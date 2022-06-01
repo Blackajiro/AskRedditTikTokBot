@@ -26,7 +26,7 @@ def make_final_video(number_of_clips):
 
     background_clip = (
         VideoFileClip("assets/mp4/clip.mp4")
-            .without_audio()
+            .audio()
             .resize(height=H)
             .crop(x1=1166.6, y1=0, x2=2246.6, y2=1920)
             .fl_image(blur)
