@@ -10,6 +10,9 @@ from moviepy.editor import (
     CompositeVideoClip,
 )
 import skimage
+from moviepy.video.fx.crop import crop
+from moviepy.video.fx.resize import resize
+
 from utils.console import print_step
 
 W, H = 1080, 1920
@@ -21,16 +24,22 @@ def blur(image):
 
 def make_final_video(number_of_clips):
     print_step("Creating the final video")
-    VideoFileClip.reW = lambda clip: clip.resize(width=W)
-    VideoFileClip.reH = lambda clip: clip.resize(width=H)
 
-    background_clip = (
-        VideoFileClip("assets/mp4/clip.mp4")
-            .audio()
-            .resize(height=H)
-            .crop(x1=1166.6, y1=0, x2=2246.6, y2=1920)
-            .fl_image(blur)
-    )
+    # Init background clip
+    background_clip = VideoFileClip("assets/mp4/clip.mp4", audio=False)
+
+    # Adding background audio
+    if os.getenv('BACKGROUND_AUDIO_URL') != '':
+        background_audio_clip = AudioFileClip("assets/mp3/clip.mp3")
+        background_clip.set_audio(background_audio_clip)
+
+    # vfx
+    if os.getenv('GAUSSIAN_BLUR_SIGMA') != 0:
+        background_clip.fl_image(blur)
+
+    # Resizing
+    background_clip = resize(background_clip, height=H)
+    background_clip = crop(background_clip, x1=1166.6, y1=0, x2=2246.6, y2=1920)
 
     # Gather all audio clips
     audio_clips = []
@@ -49,6 +58,8 @@ def make_final_video(number_of_clips):
                 .set_position("center")
                 .resize(width=W - 100),
         )
+
+    # Adding title image
     image_clips.insert(
         0,
         ImageClip(f"assets/png/title.png")
@@ -56,10 +67,12 @@ def make_final_video(number_of_clips):
             .set_position("center")
             .resize(width=W - 100),
     )
+
     image_concat = concatenate_videoclips(image_clips).set_position(
         ("center", "center")
     )
     image_concat.audio = audio_composite
+
     final = CompositeVideoClip([background_clip, image_concat])
     final.write_videofile(
         "assets/final_video.mp4", fps=30, audio_codec="aac", audio_bitrate="192k"
