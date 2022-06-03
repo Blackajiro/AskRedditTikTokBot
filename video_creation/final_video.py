@@ -38,7 +38,8 @@ def make_final_video(number_of_clips):
 
     # vfx
     if os.getenv('GAUSSIAN_BLUR_SIGMA') != 0:
-        background_clip.fl_image(blur)
+        background_clip = background_clip.fl_image(blur)
+
 
     # Resizing
     background_clip = resize(background_clip, height=H)

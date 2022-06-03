@@ -69,5 +69,5 @@ def download_screenshots_of_reddit_posts(reddit_object, screenshot_num):
             img[:, :, 3] = 225
             cv2.imwrite(f"assets/png/{l}", img)
 
-        #TODO: blur, background music
+
         print_substep("Done!", style="bold green")
