@@ -9,6 +9,7 @@ import pyttsx3
 from datetime import datetime
 import subprocess
 
+
 def get_mp3_seconds(path):
     command = f"ffmpeg -i {path}"
     duration = subprocess.getoutput(command)
@@ -21,22 +22,27 @@ def get_mp3_seconds(path):
 
 
 def save_text_to_mp3(reddit_obj):
-    engine = pyttsx3.init()
-
-    #engine.save_to_file('Hello World', 'test.mp3')
     print_step("Converting text to mp3")
+    engine = pyttsx3.init()
     length = 0
 
     # Create a folder for the mp3 files.
     Path("assets/mp3").mkdir(parents=True, exist_ok=True)
 
-    #tts = gTTS(text=reddit_obj["thread_title"], lang="en")
-    #tts.save(f"assets/mp3/title.mp3")
-    engine.save_to_file(reddit_obj["thread_title"], f"assets/mp3/title.mp3")
-    engine.runAndWait()
+    # Title
+    if os.getenv("TTS_LIBRARY") == 'gtts':
+        tts = gTTS(text=reddit_obj["thread_title"], lang="en")
+        tts.save(f"assets/mp3/title.mp3")
+        length += MP3(f"assets/mp3/title.mp3").info.length
+    elif os.getenv("TTS_LIBRARY") == 'pyttsx3':
+        engine.save_to_file(reddit_obj["thread_title"], f"assets/mp3/title.mp3")
+        engine.runAndWait()
+        length += get_mp3_seconds(f"assets/mp3/title.mp3")
+    else:
+        print("TTS_LIBRARY not defined")
+        exit(-1)
 
-    length += get_mp3_seconds(f"assets/mp3/title.mp3")
-
+    # Comments
     idx = 0
     for comment in reddit_obj["comments"]:
 
@@ -46,20 +52,21 @@ def save_text_to_mp3(reddit_obj):
         if len(comment["comment_body"]) > int(os.getenv("MAX_COMMENT_CHARS")):
             continue
 
-        #tts = gTTS(text=comment["comment_body"], lang="en")
-        #tts.save(f"assets/mp3/{str(idx)}.mp3")
-
-        engine.save_to_file(comment["comment_body"], f"assets/mp3/{str(idx)}.mp3")
-        engine.runAndWait()
-
-        length += get_mp3_seconds(f"assets/mp3/{str(idx)}.mp3")
+        if os.getenv("TTS_LIBRARY") == 'gtts':
+            tts = gTTS(text=comment["comment_body"], lang="en")
+            tts.save(f"assets/mp3/{str(idx)}.mp3")
+            length += MP3(f"assets/mp3/{str(idx)}.mp3").info.length
+        elif os.getenv("TTS_LIBRARY") == 'pyttsx3':
+            engine.save_to_file(comment["comment_body"], f"assets/mp3/{str(idx)}.mp3")
+            engine.runAndWait()
+            length += get_mp3_seconds(f"assets/mp3/{str(idx)}.mp3")
 
         idx += 1
+
+    # Done! return length and screen number
 
     print_substep(str(idx) + " comments processed")
     print_substep(str(length) + "s of total length")
     print_substep("Done!", style="bold green")
 
-    engine.runAndWait()
-    ## ! Return the index so we know how many screenshots of comments we need to make.
     return length, idx
