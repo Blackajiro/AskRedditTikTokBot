@@ -5,16 +5,6 @@ from pathlib import Path
 from rich.progress import track
 from utils.console import print_step, print_substep
 
-def reddit_login(browser):
-    page = browser.new_page()
-    page.goto("https://www.reddit.com/login/")
-    page.fill('#loginUsername', os.getenv("REDDIT_USERNAME"))
-    page.fill('#loginPassword', os.getenv("REDDIT_PASSWORD"))
-    page.click('#loginPassword')
-
-
-    page.keyboard.press("Enter")
-    page.screenshot(path='login.png')
 
 def download_screenshots_of_reddit_posts(reddit_object, screenshot_num):
     print_step("Downloading Screenshots")
@@ -24,10 +14,14 @@ def download_screenshots_of_reddit_posts(reddit_object, screenshot_num):
 
     with sync_playwright() as p:
         print_substep("Launching Headless Browser")
-        browser = p.chromium.launch()
-        reddit_login(browser)
-        # Get the thread screenshot
+        browser = p.chromium.launch(headless=True)
         page = browser.new_page()
+        #login
+        page.goto("https://www.reddit.com/login/")
+        page.fill('#loginUsername', os.getenv("REDDIT_USERNAME"))
+        page.fill('#loginPassword', os.getenv("REDDIT_PASSWORD"))
+        page.locator("text=Accedi").click()
+        # Get the thread screenshot
         page.goto(reddit_object["thread_url"])
 
         if page.locator('[data-testid="content-gate"]').is_visible():
