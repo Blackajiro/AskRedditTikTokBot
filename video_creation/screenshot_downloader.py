@@ -21,8 +21,9 @@ def download_screenshots_of_reddit_posts(reddit_object, screenshot_num):
         page.fill('#loginUsername', os.getenv("REDDIT_USERNAME"))
         page.fill('#loginPassword', os.getenv("REDDIT_PASSWORD"))
         page.locator("text=Accedi").click()
+        page.locator("text=Accept all").click()
         # Get the thread screenshot
-        page.goto(reddit_object["thread_url"])
+        page.goto(reddit_object["thread_url"], timeout=0)
 
         if page.locator('[data-testid="content-gate"]').is_visible():
             # This means the post is NSFW and requires to click the proceed button.
@@ -32,6 +33,7 @@ def download_screenshots_of_reddit_posts(reddit_object, screenshot_num):
         page.locator('[data-test-id="post-content"]').screenshot(
             path="assets/png/title.png"
         )
+
 
         print_substep("Downloading screenshots")
 
