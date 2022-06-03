@@ -60,6 +60,8 @@ def download_screenshots_of_reddit_posts(reddit_object, screenshot_num):
 
             if page.locator('[data-testid="content-gate"]').is_visible():
                 page.locator('[data-testid="content-gate"] button').click()
+            if page.locator("text=Accept all").is_visible():
+                page.locator("text=Accept all").click()
 
             if page.locator('text=Accept all').is_visible():
                 page.locator("text=Accept all").click()
