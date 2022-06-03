@@ -8,7 +8,9 @@ from moviepy.editor import (
     concatenate_audioclips,
     CompositeAudioClip,
     CompositeVideoClip,
+
 )
+from moviepy.audio.fx.volumex import volumex
 import skimage
 from moviepy.video.fx.crop import crop
 from moviepy.video.fx.resize import resize
@@ -31,7 +33,8 @@ def make_final_video(number_of_clips):
     # Adding background audio
     if os.getenv('BACKGROUND_AUDIO_URL') != '':
         background_audio_clip = AudioFileClip("assets/mp3/clip.mp3")
-        background_clip.set_audio(background_audio_clip)
+        new_audioclip = CompositeAudioClip([background_audio_clip]).fx(volumex, 0.3)
+        background_clip.audio = new_audioclip
 
     # vfx
     if os.getenv('GAUSSIAN_BLUR_SIGMA') != 0:
