@@ -13,19 +13,20 @@ load_dotenv()
 # Title
 print_markdown("AskRedditTikTokBot - based on elebumm's RedditVideoMakerBot")
 time.sleep(1)
+times = 2
+for _ in range(times):
+    # Backgrounds
+    download_background()
+    download_background_audio()
 
-# Backgrounds
-download_background()
-download_background_audio()
+    # Thread
+    reddit_object = get_threads()
 
-# Thread
-reddit_object = get_threads()
+    # Audio and Video process
+    length, number_of_comments = save_text_to_mp3(reddit_object)
+    download_screenshots_of_reddit_posts(reddit_object, number_of_comments)
+    chop_background_video(length)
+    chop_background_audio(length)
 
-# Audio and Video process
-length, number_of_comments = save_text_to_mp3(reddit_object)
-download_screenshots_of_reddit_posts(reddit_object, number_of_comments)
-chop_background_video(length)
-chop_background_audio(length)
-
-# Final editing
-final_video = make_final_video(number_of_comments)
+    # Final editing
+    final_video = make_final_video(number_of_comments)

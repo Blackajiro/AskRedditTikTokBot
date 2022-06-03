@@ -1,5 +1,6 @@
 import os
-
+import datetime
+from pathlib import Path
 from moviepy.editor import (
     VideoFileClip,
     AudioFileClip,
@@ -77,10 +78,11 @@ def make_final_video(number_of_clips):
         ("center", "center")
     )
     image_concat.audio = audio_composite
-
     final = CompositeVideoClip([background_clip, image_concat])
+    currentDT = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    Path(f"assets/final_videos").mkdir(parents=True, exist_ok=True)
     final.write_videofile(
-        "assets/final_video.mp4", fps=30, audio_codec="aac", audio_bitrate="192k"
+        f"assets/final_videos/{currentDT}.mp4", fps=30, audio_codec="aac", audio_bitrate="192k"
     )
 
     for i in range(0, number_of_clips):
