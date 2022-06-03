@@ -33,7 +33,8 @@ def make_final_video(number_of_clips):
     # Adding background audio
     if os.getenv('BACKGROUND_AUDIO_URL') != '':
         background_audio_clip = AudioFileClip("assets/mp3/clip.mp3")
-        new_audioclip = CompositeAudioClip([background_audio_clip]).fx(volumex, 0.3)
+        vol_multiplier = float(os.getenv('BACKGROUND_MUSIC_VOLUME_ADJUST')) if os.getenv('BACKGROUND_MUSIC_VOLUME_ADJUST') != '' else 0.3
+        new_audioclip = CompositeAudioClip([background_audio_clip]).fx(volumex, vol_multiplier)
         background_clip.audio = new_audioclip
 
     # vfx

@@ -48,20 +48,18 @@ def save_text_to_mp3(reddit_obj):
 
         if length > int(os.getenv("MAX_SECONDS")):
             break
-
-        if len(comment["comment_body"]) > int(os.getenv("MAX_COMMENT_CHARS")):
-            continue
-
-        if os.getenv("TTS_LIBRARY") == 'gtts':
-            tts = gTTS(text=comment["comment_body"], lang="en")
-            tts.save(f"assets/mp3/{str(idx)}.mp3")
-            length += MP3(f"assets/mp3/{str(idx)}.mp3").info.length
-        elif os.getenv("TTS_LIBRARY") == 'pyttsx3':
-            engine.save_to_file(comment["comment_body"], f"assets/mp3/{str(idx)}.mp3")
-            engine.runAndWait()
-            length += get_mp3_seconds(f"assets/mp3/{str(idx)}.mp3")
-
-        idx += 1
+        if not ('deleted' in comment) and not ('removed' in comment):
+            if len(comment["comment_body"]) > int(os.getenv("MAX_COMMENT_CHARS")):
+                continue
+            if os.getenv("TTS_LIBRARY") == 'gtts':
+                tts = gTTS(text=comment["comment_body"], lang="en")
+                tts.save(f"assets/mp3/{str(idx)}.mp3")
+                length += MP3(f"assets/mp3/{str(idx)}.mp3").info.length
+            elif os.getenv("TTS_LIBRARY") == 'pyttsx3':
+                engine.save_to_file(comment["comment_body"], f"assets/mp3/{str(idx)}.mp3")
+                engine.runAndWait()
+                length += get_mp3_seconds(f"assets/mp3/{str(idx)}.mp3")
+            idx += 1
 
     # Done! return length and screen number
 
