@@ -52,7 +52,7 @@ def download_background_audio():
 
 
 def chop_background_video(video_length):
-    print_substep("Processing background")
+    print_step("Processing background")
 
     background = VideoFileClip("assets/mp4/background.mp4")
     start_time, end_time = get_start_and_end_times(video_length + 1, background.duration)
@@ -68,7 +68,7 @@ def chop_background_video(video_length):
 
 def chop_background_audio(video_length):
     if not(args_config['no_audio']) and os.getenv('BACKGROUND_AUDIO_URL') != '':
-        print_substep("Processing background audio")
+        print_step("Processing background audio")
 
         background = AudioFileClip("assets/mp3/background_audio.mp3")
         start_time, end_time = get_start_and_end_times(video_length + 1, background.duration)

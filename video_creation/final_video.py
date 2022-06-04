@@ -76,14 +76,14 @@ def make_final_video(number_of_clips):
     )
 
     image_concat = concatenate_videoclips(image_clips).set_position(
-        ("center", "center")
+        ("center", 500)
     )
     image_concat.audio = audio_composite
     final = CompositeVideoClip([background_clip, image_concat])
-    currentDT = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    current_datetime = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     Path(f"assets/final_videos").mkdir(parents=True, exist_ok=True)
     final.write_videofile(
-        f"assets/final_videos/{currentDT}.mp4", fps=30, audio_codec="aac", audio_bitrate="192k"
+        f"assets/final_videos/{current_datetime}.mp4", fps=30, audio_codec="aac", audio_bitrate="192k", bitrate="14M"
     )
 
     for i in range(0, number_of_clips):

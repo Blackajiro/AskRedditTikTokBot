@@ -7,7 +7,7 @@ from utils.console import print_step, print_substep
 
 
 def get_threads():
-    print_step("Getting threads")
+    print_step("Getting thread")
 
     content = {}
 
