@@ -4,7 +4,8 @@ from gtts import gTTS
 from pathlib import Path
 from mutagen.mp3 import MP3
 from utils.console import print_step, print_substep
-from rich.progress import track
+
+from utils.arguments_manager import args_config
 import pyttsx3
 from datetime import datetime
 import subprocess
@@ -46,10 +47,10 @@ def save_text_to_mp3(reddit_obj):
     idx = 0
     for comment in reddit_obj["comments"]:
 
-        if length > int(os.getenv("MAX_SECONDS")):
+        if length > args_config['length']:
             break
         if not ('deleted' in comment) and not ('removed' in comment):
-            if len(comment["comment_body"]) > int(os.getenv("MAX_COMMENT_CHARS")):
+            if len(comment["comment_body"]) < args_config['minchars'] or len(comment["comment_body"]) > args_config['maxchars']:
                 continue
             if os.getenv("TTS_LIBRARY") == 'gtts':
                 tts = gTTS(text=comment["comment_body"], lang="en")

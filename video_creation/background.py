@@ -1,6 +1,7 @@
 import os
 from random import randrange
 
+from utils.arguments_manager import args_config
 from moviepy.audio.io.AudioFileClip import AudioFileClip
 from pytube import YouTube
 from pathlib import Path
@@ -10,7 +11,6 @@ from utils.console import print_step, print_substep
 
 
 def get_start_and_end_times(video_length, length_of_clip):
-    #random_time = randrange(180, int(length_of_clip) - int(video_length))
     random_time = randrange(180, int(length_of_clip) - int(video_length))
     return random_time, random_time + video_length
 
@@ -20,7 +20,7 @@ def download_background():
     if not Path("assets/mp4/background.mp4").is_file():
         print_substep("Downloading background, this may take a while...")
         YouTube(os.getenv("BACKGROUND_VIDEO_URL")).streams.filter(
-            res="720p"
+            res="1080p"
         ).first().download(
             "assets/mp4",
             filename="background.mp4",
@@ -34,7 +34,7 @@ def download_background():
 def download_background_audio():
     print_step("Background audio")
 
-    if os.getenv('BACKGROUND_AUDIO_URL') == '':
+    if args_config['no_audio'] or os.getenv('BACKGROUND_AUDIO_URL') == '':
         print_substep("Background audio disabled")
     else:
         if not Path("assets/mp3/background_audio.mp3").is_file():
@@ -67,7 +67,7 @@ def chop_background_video(video_length):
 
 
 def chop_background_audio(video_length):
-    if os.getenv('BACKGROUND_AUDIO_URL') != '':
+    if not(args_config['no_audio']) and os.getenv('BACKGROUND_AUDIO_URL') != '':
         print_substep("Processing background audio")
 
         background = AudioFileClip("assets/mp3/background_audio.mp3")

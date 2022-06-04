@@ -2,13 +2,15 @@ import os
 import cv2
 from playwright.sync_api import sync_playwright
 from pathlib import Path
-from rich.progress import track
+
+from utils.arguments_manager import args_config
 from utils.console import print_step, print_substep
 
 
-def zoom_in(page, times = 5):
+def zoom_in(page, times=5):
     for _ in range(times):
         page.keyboard.press("Control++")
+
 
 def download_screenshots_of_reddit_posts(reddit_object, screenshot_num):
     print_step("Downloading Screenshots")
@@ -21,12 +23,14 @@ def download_screenshots_of_reddit_posts(reddit_object, screenshot_num):
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         page.set_viewport_size({"width": 600, "height": 600})
-        #login
+
+        # login
         page.goto("https://www.reddit.com/login/")
         page.fill('#loginUsername', os.getenv("REDDIT_USERNAME"))
         page.fill('#loginPassword', os.getenv("REDDIT_PASSWORD"))
         page.locator("text=Accedi").click()
         page.locator("text=Accept all").click()
+
         # Get the thread screenshot
         page.goto(reddit_object["thread_url"], timeout=0)
         page.reload()
@@ -40,13 +44,13 @@ def download_screenshots_of_reddit_posts(reddit_object, screenshot_num):
             path="assets/png/title.png"
         )
 
+        # Take screenshots
 
         print_substep("Downloading screenshots")
-
         idx = 0
         for comment in reddit_object["comments"]:
 
-            if len(comment["comment_body"]) > int(os.getenv("MAX_COMMENT_CHARS")):
+            if len(comment["comment_body"]) < args_config['minchars'] or len(comment["comment_body"]) > args_config['maxchars']:
                 continue
 
             if idx >= screenshot_num:
@@ -63,11 +67,13 @@ def download_screenshots_of_reddit_posts(reddit_object, screenshot_num):
 
             idx += 1
 
-        for l in os.listdir(f"assets/png"):
-            img = cv2.imread(f"assets/png/{l}")
-            img = cv2.cvtColor(img, cv2.COLOR_RGB2RGBA)
-            img[:, :, 3] = 225
-            cv2.imwrite(f"assets/png/{l}", img)
+        # Add transparency
 
+        if not(args_config['no_transparency']):
+            for l in os.listdir(f"assets/png"):
+                img = cv2.imread(f"assets/png/{l}")
+                img = cv2.cvtColor(img, cv2.COLOR_RGB2RGBA)
+                img[:, :, 3] = 235
+                cv2.imwrite(f"assets/png/{l}", img)
 
         print_substep("Done!", style="bold green")

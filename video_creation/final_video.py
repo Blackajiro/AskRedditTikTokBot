@@ -1,6 +1,9 @@
 import os
 import datetime
 from pathlib import Path
+
+from utils.arguments_manager import args_config
+
 from moviepy.editor import (
     VideoFileClip,
     AudioFileClip,
@@ -15,7 +18,6 @@ from moviepy.audio.fx.volumex import volumex
 import skimage
 from moviepy.video.fx.crop import crop
 from moviepy.video.fx.resize import resize
-
 from utils.console import print_step
 
 W, H = 1080, 1920
@@ -32,7 +34,7 @@ def make_final_video(number_of_clips):
     background_clip = VideoFileClip("assets/mp4/clip.mp4", audio=False)
 
     # Adding background audio
-    if os.getenv('BACKGROUND_AUDIO_URL') != '':
+    if not(args_config['no_audio']) and os.getenv('BACKGROUND_AUDIO_URL') != '':
         background_audio_clip = AudioFileClip("assets/mp3/clip.mp3")
         vol_multiplier = float(os.getenv('BACKGROUND_MUSIC_VOLUME_ADJUST')) if os.getenv('BACKGROUND_MUSIC_VOLUME_ADJUST') != '' else 0.3
         new_audioclip = CompositeAudioClip([background_audio_clip]).fx(volumex, vol_multiplier)
@@ -41,7 +43,6 @@ def make_final_video(number_of_clips):
     # vfx
     if os.getenv('GAUSSIAN_BLUR_SIGMA') != 0:
         background_clip = background_clip.fl_image(blur)
-
 
     # Resizing
     background_clip = resize(background_clip, height=H)
