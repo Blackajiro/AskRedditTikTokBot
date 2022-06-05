@@ -10,6 +10,8 @@ import pyttsx3
 from datetime import datetime
 import subprocess
 
+from utils.explicit_content_manager import censor_sexual_words
+
 
 def pyttsx3_tts(string, title):
     tts_engine = pyttsx3.init()
@@ -40,12 +42,13 @@ def save_text_to_mp3(reddit_obj):
     Path("assets/mp3").mkdir(parents=True, exist_ok=True)
 
     # Title
+    thread_title = censor_sexual_words(reddit_obj["thread_title"])
     if os.getenv("TTS_LIBRARY") == 'gtts':
-        tts = gTTS(text=reddit_obj["thread_title"], lang="en")
+        tts = gTTS(text=thread_title, lang="en")
         tts.save(f"assets/mp3/title.mp3")
         length += MP3(f"assets/mp3/title.mp3").info.length
     elif os.getenv("TTS_LIBRARY") == 'pyttsx3':
-        pyttsx3_tts(reddit_obj["thread_title"], 'title')
+        pyttsx3_tts(thread_title, 'title')
         length += get_mp3_seconds(f"assets/mp3/title.mp3")
     else:
         print("TTS_LIBRARY not defined")
@@ -57,17 +60,23 @@ def save_text_to_mp3(reddit_obj):
 
         if length > args_config['length']:
             break
+
         if not ('deleted' in comment) and not ('removed' in comment):
-            if len(comment["comment_body"]) < args_config['minchars'] or len(comment["comment_body"]) > args_config[
+
+            comment_body = censor_sexual_words(comment["comment_body"])
+
+            if len(comment_body) < args_config['minchars'] or len(comment_body) > args_config[
                 'maxchars']:
                 continue
+
             if os.getenv("TTS_LIBRARY") == 'gtts':
-                tts = gTTS(text=comment["comment_body"], lang="en")
+                tts = gTTS(text=comment_body, lang="en")
                 tts.save(f"assets/mp3/{str(idx)}.mp3")
                 length += MP3(f"assets/mp3/{str(idx)}.mp3").info.length
             elif os.getenv("TTS_LIBRARY") == 'pyttsx3':
-                pyttsx3_tts(comment["comment_body"], str(idx))
+                pyttsx3_tts(comment_body, str(idx))
                 length += get_mp3_seconds(f"assets/mp3/{str(idx)}.mp3")
+
             idx += 1
 
     # Done! return length and screen number
