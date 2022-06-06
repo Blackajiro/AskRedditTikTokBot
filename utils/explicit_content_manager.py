@@ -8,6 +8,7 @@ sexual_words = {
     "cock": "penis",
     "dick": "penis",
     "cumshot": "ejaculation",
+    "cumming": "ejaculating",
     "cum": "semen",
     "squirt": "flow",
     "porn": "lewd",
