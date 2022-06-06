@@ -43,3 +43,4 @@ websockets==10.1
 scikit-image==0.19.2
 pyttsx3==2.90
 opencv-python==4.5.5.64
+pyinstaller==5.1

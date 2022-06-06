@@ -1,7 +1,4 @@
-import sys
-
 from dotenv import load_dotenv
-from utils.console import *
 from reddit.threads import *
 from video_creation.background import *
 from video_creation.voices import *
@@ -123,7 +120,8 @@ class Gui:
             self.minc.grid(sticky='W', column=1, row=self.minc_row, padx=self.curr_padx, pady=self.curr_pady)
             self.maxc_label.grid(sticky='W', column=2, row=self.minc_row, padx=self.curr_padx, pady=self.curr_pady)
             self.maxc.grid(sticky='W', column=3, row=self.minc_row, padx=self.curr_padx, pady=self.curr_pady)
-            self.seconds_label.grid(sticky='W', column=0, row=self.seconds_row, padx=self.curr_padx, pady=self.curr_pady)
+            self.seconds_label.grid(sticky='W', column=0, row=self.seconds_row, padx=self.curr_padx,
+                                    pady=self.curr_pady)
             self.seconds.grid(sticky='W', column=1, row=self.seconds_row, padx=self.curr_padx, pady=self.curr_pady)
         else:
             self.minc_label.grid_forget()
@@ -185,11 +183,12 @@ class Gui:
             self.update_step('Done!', 100)
 
         except Exception as e:
-            tk.messagebox.showinfo("Exception",  str(e))
+            tk.messagebox.showinfo("Exception", str(e))
             self.update_step('', 0)
             self.status_text.grid_forget()
 
         self.start_button['state'] = tk.ACTIVE
 
 
-App = Gui()
+def main():
+    Gui()

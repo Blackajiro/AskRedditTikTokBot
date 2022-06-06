@@ -3,3 +3,7 @@
 /venv
 /.idea
 /.run
+/dist
+/build
+*.spec
+*.mp4
