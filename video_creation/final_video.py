@@ -4,16 +4,7 @@ from pathlib import Path
 
 from utils.arguments_manager import args_config
 
-from moviepy.editor import (
-    VideoFileClip,
-    AudioFileClip,
-    ImageClip,
-    concatenate_videoclips,
-    concatenate_audioclips,
-    CompositeAudioClip,
-    CompositeVideoClip,
-
-)
+from moviepy.editor import *
 from moviepy.audio.fx.volumex import volumex
 import skimage
 from moviepy.video.fx.crop import crop
@@ -80,6 +71,10 @@ def make_final_video(number_of_clips):
     )
     image_concat.audio = audio_composite
     final = CompositeVideoClip([background_clip, image_concat])
+
+    if bool(os.getenv('FINAL_VIDEO_SPEED')):
+        final = final.fx(vfx.speedx, float(os.getenv('FINAL_VIDEO_SPEED')))
+
     current_datetime = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     Path(f"assets/final_videos").mkdir(parents=True, exist_ok=True)
     final.write_videofile(

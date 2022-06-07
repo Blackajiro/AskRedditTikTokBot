@@ -1,6 +1,7 @@
 sexual_words = {
     "sexual experience": "intercourse",
     "sexual": "",
+    "sexy": "tempting",
     "sex": "lovemaking",
     "blowjob": "oral",
     "blow job": "oral",
