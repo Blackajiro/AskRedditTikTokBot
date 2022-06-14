@@ -1,4 +1,5 @@
 import os
+import re
 
 from gtts import gTTS
 from pathlib import Path
@@ -11,6 +12,47 @@ from datetime import datetime
 import subprocess
 
 from utils.explicit_content_manager import censor_sexual_words
+
+#from pydub import AudioSegment
+#import soundfile as sf
+#import pyrubberband as pyrb
+
+
+#def time_stretch_mp3(filename):
+    #filepath = f"assets/mp3/{str(filename)}"
+
+    #sound = AudioSegment.from_mp3(f"{filepath}.mp3")
+    #sound.export(f"{filepath}.wav", format="wav")
+
+    #y, sr = sf.read(f"{filepath}.wav")
+
+    # Play back at 1.5X speed
+    #y_stretch = pyrb.time_stretch(y, sr, 1.5)
+
+    # Play back two 1.5x tones
+    #y_shift = pyrb.pitch_shift(y, sr, 1.5)
+
+    #sf.write(f"{filepath}.wav", y_stretch, sr, format='wav')
+
+    #sound = AudioSegment.from_wav(f"{filepath}.wav")
+    #sound.export(f"{filepath}.mp3", format="mp3")
+
+
+def do_tts(string, title):
+    print_substep('Generating ' + str(title) + '.mp3')
+
+    length = 0
+    if os.getenv("TTS_LIBRARY") == 'gtts':
+        tts = gTTS(text=string, lang="en")
+        tts.save(f"assets/mp3/{str(title)}.mp3")
+        length = MP3(f"assets/mp3/{str(title)}.mp3").info.length
+    elif os.getenv("TTS_LIBRARY") == 'pyttsx3':
+        pyttsx3_tts(string, str(title))
+        length = get_mp3_seconds(f"assets/mp3/{str(title)}.mp3")
+    else:
+        print("TTS_LIBRARY not defined")
+        exit(-1)
+    return length
 
 
 def pyttsx3_tts(string, title):
@@ -43,77 +85,43 @@ def save_text_to_mp3(reddit_obj):
 
     # Title
     thread_title = censor_sexual_words(reddit_obj["thread_title"])
-    if os.getenv("TTS_LIBRARY") == 'gtts':
-        tts = gTTS(text=thread_title, lang="en")
-        tts.save(f"assets/mp3/title.mp3")
-        length += MP3(f"assets/mp3/title.mp3").info.length
-    elif os.getenv("TTS_LIBRARY") == 'pyttsx3':
-        pyttsx3_tts(thread_title, 'title')
-        length += get_mp3_seconds(f"assets/mp3/title.mp3")
-    else:
-        print("TTS_LIBRARY not defined")
-        exit(-1)
+    thread_title = re.sub(r'http\S+', '', thread_title)
+    length += do_tts(thread_title, 'title')
 
-    # Comments
+    # Body
     idx = 0
-    for comment in reddit_obj["comments"]:
+    if args_config['mode'] == 'ask':
 
-        if length > args_config['length']:
-            break
+        for comment in reddit_obj["comments"]:
 
-        if not ('deleted' in comment) and not ('removed' in comment):
+            if length > args_config['length']:
+                break
 
-            comment_body = censor_sexual_words(comment["comment_body"])
+            if not ('deleted' in comment) and not ('removed' in comment):
 
-            if len(comment_body) < args_config['minchars'] or len(comment_body) > args_config[
-                'maxchars']:
-                continue
+                comment_body = censor_sexual_words(comment["comment_body"])
+                comment_body = re.sub(r'http\S+', '', comment_body)
 
-            if os.getenv("TTS_LIBRARY") == 'gtts':
-                tts = gTTS(text=comment_body, lang="en")
-                tts.save(f"assets/mp3/{str(idx)}.mp3")
-                length += MP3(f"assets/mp3/{str(idx)}.mp3").info.length
-            elif os.getenv("TTS_LIBRARY") == 'pyttsx3':
-                pyttsx3_tts(comment_body, str(idx))
-                length += get_mp3_seconds(f"assets/mp3/{str(idx)}.mp3")
+                if len(comment_body) < args_config['minchars'] or len(comment_body) > args_config[
+                    'maxchars']:
+                    continue
 
+                length += do_tts(comment_body, idx)
+
+                idx += 1
+
+    elif args_config['mode'] == 'story':
+
+        for sentence in reddit_obj["thread_selftext"]:
+            length += do_tts(censor_sexual_words(sentence), idx)
             idx += 1
 
-    # Done! return length and screen number
-
-    print_substep(str(idx) + " comments processed")
-    print_substep(str(length) + "s of total length")
-    print_substep("Done!", style="bold green")
-
-    return length, idx
-
-def save_text_to_mp3_type_1(reddit_obj):
-    # saves text to mp3 for type 1 video
-    print_step("Converting text to mp3")
-    length = 0
-    Path("assets/mp3").mkdir(parents=True, exist_ok=True)
-    if os.getenv("TTS_LIBRARY") == 'gtts':
-        tts = gTTS(text=reddit_obj["thread_title"], lang="en")
-        tts.save(f"assets/mp3/title.mp3")
-    elif os.getenv("TTS_LIBRARY") == 'pyttsx3':
-        pyttsx3_tts(reddit_obj["thread_title"], 'title')
-        length += get_mp3_seconds(f"assets/mp3/title.mp3")
     else:
-        print("TTS_LIBRARY not defined")
         exit(-1)
 
-    idx = 0
-    for sentence in reddit_obj["thread_selftext"]:  # could be enumerate
-        comment_body = censor_sexual_words(sentence)
-        if os.getenv("TTS_LIBRARY") == 'gtts':
-            tts = gTTS(text=comment_body, lang="en")
-            tts.save(f"assets/mp3/{str(idx)}.mp3")
-            length += MP3(f"assets/mp3/{str(idx)}.mp3").info.length
-        elif os.getenv("TTS_LIBRARY") == 'pyttsx3':
-            pyttsx3_tts(comment_body, str(idx))
-            length += get_mp3_seconds(f"assets/mp3/{str(idx)}.mp3")
-
-        idx += 1
-
+    # Done! return length and screen number
+    print_substep(str(idx) + " strings processed")
+    print_substep(str(length) + "s of total length")
+    print_substep("Done!", style="bold green")
 
     return length, idx

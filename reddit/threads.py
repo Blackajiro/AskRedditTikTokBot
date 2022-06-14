@@ -5,6 +5,10 @@ from utils.arguments_manager import args_config
 import praw
 from utils.console import print_step, print_substep
 import nltk.data
+
+from utils.utils import split_comment
+
+
 def get_threads():
     print_step("Getting thread")
 
@@ -28,33 +32,12 @@ def get_threads():
     print_substep(f"Thread found: {submission.title}")
 
     try:
+
         content["thread_url"] = submission.url
-        #nltk.download()
-        tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
-        sentences = tokenizer.tokenize(submission.selftext) #  this is the post text
+        content['author'] = submission.author.name
         content["thread_title"] = submission.title
         content["comments"] = []
-
-        max_sentence_len = 0
-        for s in sentences:
-            max_sentence_len = max(max_sentence_len, len(s))
-        chars_per_screen = 400
-        if max_sentence_len > chars_per_screen:
-            print("Sentences are too long")
-            exit(-1)
-        i = 0
-        j = 0
-        chars = 0
-        content['thread_selftext'] = ['']
-        while i < len(sentences):
-            chars += len(sentences[i])
-            if chars > chars_per_screen:
-                chars = 0
-                j += 1
-                content['thread_selftext'].append('')
-            else:
-                content['thread_selftext'][j] += sentences[i] + ' '
-                i += 1
+        content['thread_selftext'] = split_comment(submission.selftext[0:1000])
 
         for top_level_comment in submission.comments:
             content["comments"].append(
@@ -66,6 +49,7 @@ def get_threads():
             )
 
     except AttributeError as e:
+        print(e)
         pass
 
     print_substep("Done!", style="bold green")

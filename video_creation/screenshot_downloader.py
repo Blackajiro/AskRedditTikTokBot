@@ -9,79 +9,57 @@ from utils.console import print_step, print_substep
 import re
 import textwrap
 
+
 def zoom_in(page, times=5):
     for _ in range(times):
         page.keyboard.press("Control++")
 
-def download_screenshots_of_reddit_posts_type_1(reddit_object):
-    print_step("Downloading Screenshots")
-    Path("assets/png").mkdir(parents=True, exist_ok=True)
-    with sync_playwright() as p:
-        print_substep("Launching Headless Browser")
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-        page.set_viewport_size({"width": 600, "height": 600})
 
-        print_substep("Logging in")
+def title_to_png(header, title, img_padding=15):
+    print_substep('Generating ' + str(title) + '.png')
+    font = ImageFont.truetype(f'video_creation/BentonSans-Regular.ttf', 14)
+    bigger_font = ImageFont.truetype(f'video_creation/BentonSans-Regular.ttf', 20)
 
-        # login
-        page.goto("https://www.reddit.com/login/")
-        page.fill('#loginUsername', os.getenv("REDDIT_USERNAME"))
-        page.fill('#loginPassword', os.getenv("REDDIT_PASSWORD"))
-        page.locator("text=Accedi").click()
-        page.locator("text=Accept all").click()
+    # Create image to obtain text size
+    img = Image.new("L", (1000, 500), color=0)
+    draw = ImageDraw.Draw(img)
+    w, h = draw.textsize(header + "\n\n" + title, font=bigger_font)
 
-        # Get the thread screenshot
-        page.goto(reddit_object["thread_url"], timeout=0)
-        page.reload()
+    # Create final image with padding
+    img2 = Image.new("L", (w + img_padding * 2, h + img_padding * 2), color=0)
+    draw2 = ImageDraw.Draw(img2)
+    draw2.text((img_padding, img_padding), text=header, fill='lightgray', font=font, spacing=5)
+    draw2.text((img_padding, img_padding + 30), text=title, fill='white', font=bigger_font, spacing=5)
+    img2.save(f"assets/png/title.png")
 
-        if page.locator('[data-testid="content-gate"]').is_visible():
-            # This means the post is NSFW and requires to click the proceed button.
-            print_substep("Post is NSFW.")
-            page.locator('[data-testid="content-gate"] button').click()
 
-        print_substep("Taking title screenshot")
+def text_to_png(text, name, img_padding=15):
+    print_substep('Generating ' + str(name) + '.png')
+    font = ImageFont.truetype(f'video_creation/BentonSans-Regular.ttf', 16)
 
-        # screenshot the whole page for some reason
-        page.locator('[data-test-id="post-content"]').screenshot(
-            path="assets/png/title.png"
-        )
+    # Remove urls
+    paragraph = re.sub(r'http\S+', '', text)
 
-        # Take screenshots
-        #print_substep("Taking selftext screenshots")
-        #page.locator('[data-test-id="post-container"]').screenshot( # maybe post-content
-        #    path="assets/png/container.png"
-        #)
-        print_substep("Taking screenshots")
-        idx = 0
-        img_width = 528
-        font_size = 14
-        padding = 15
-        font = ImageFont.truetype(f'video_creation/BentonSans-Regular.ttf', font_size)
-        for sentence in reddit_object["thread_selftext"]:
-            s = " ".join(sentence.split())  # remove all double " "
-            split_sentence = s.split(' ')
-            words_to_plot = ['']
-            j = 0
-            siz = 0
-            for w in split_sentence:
-                siz += font.getsize(' ' + w)[0]  # for efficiency you could keep this size in memory
-                # and add incrementally the size of the current word and the space
-                if siz > (img_width - padding * 2 - 1):  # -1 because of possible trailing \n, padding on both sides
-                    words_to_plot[j] += '\n'
-                    words_to_plot.append(w)  # next line
-                    siz = font.getsize(w)[0]
-                    j += 1
-                else:
-                    words_to_plot[j] += ' ' + w
-            sent = ' '.join(words_to_plot)
-            s = font.getsize(sent)
-            bg = Image.new('RGB', (img_width, s[1] * sent.count('\n') + 50), (26, 26, 27))
-            img = bg.copy()
-            image_editable = ImageDraw.Draw(img)
-            image_editable.text((padding, padding), sent, (214, 214, 214), font=font)
-            img.save(f"assets/png/comment_{idx}.png")
-            idx += 1
+    # Fix whitespaces
+    paragraph = re.sub(' +', ' ', paragraph)
+    paragraph = paragraph.replace('.', '. ')
+
+    # Single string line to multiline
+    wrapped_text = textwrap.wrap(paragraph, width=60)
+    text = "\n".join(wrapped_text)
+
+    # Create image to obtain text size
+    img = Image.new("L", (1000, 500), color=0)
+    draw = ImageDraw.Draw(img)
+    w, h = draw.textsize(text, font=font)
+
+    # Create final image with padding
+    img2 = Image.new("L", (w + img_padding * 2, h + img_padding * 2), color=0)
+    draw2 = ImageDraw.Draw(img2)
+    draw2.text((img_padding, img_padding), text=text, fill='white', font=font, spacing=5)
+    img2.save(f"assets/png/{name}.png")
+
+    return True
 
 
 def download_screenshots_of_reddit_posts(reddit_object, screenshot_num):
@@ -91,6 +69,7 @@ def download_screenshots_of_reddit_posts(reddit_object, screenshot_num):
 
     with sync_playwright() as p:
         print_substep("Launching Headless Browser")
+
         browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         page.set_viewport_size({"width": 600, "height": 600})
@@ -113,41 +92,56 @@ def download_screenshots_of_reddit_posts(reddit_object, screenshot_num):
             print_substep("Post is NSFW.")
             page.locator('[data-testid="content-gate"] button').click()
 
-        print_substep("Taking title screenshot")
-
-        page.locator('[data-test-id="post-content"]').screenshot(
-            path="assets/png/title.png"
-        )
-
         # Take screenshots
-        print_substep("Taking comments screenshots")
-        idx = 0
-        for comment in reddit_object["comments"]:
+        if args_config['mode'] == 'ask':
 
-            if len(comment["comment_body"]) < args_config['minchars'] or len(comment["comment_body"]) > args_config['maxchars']:
-                continue
+            print_substep("Generating title.png")
 
-            if idx >= screenshot_num:
-                break
-
-            if page.locator('[data-testid="content-gate"]').is_visible():
-                page.locator('[data-testid="content-gate"] button').click()
-            if page.locator("text=Accept all").is_visible():
-                page.locator("text=Accept all").click()
-
-            if page.locator('text=Accept all').is_visible():
-                page.locator("text=Accept all").click()
-
-            page.goto(f'https://reddit.com{comment["comment_url"]}')
-
-            page.locator(f"#t1_{comment['comment_id']}").screenshot(
-                path=f"assets/png/comment_{idx}.png"
+            page.locator('[data-test-id="post-content"]').screenshot(
+                path="assets/png/title.png"
             )
 
-            idx += 1
+            print_substep("Taking comments screenshots")
+
+            idx = 0
+            for comment in reddit_object["comments"]:
+
+                if len(comment["comment_body"]) < args_config['minchars'] or len(comment["comment_body"]) > args_config[
+                    'maxchars']:
+                    continue
+
+                if idx >= screenshot_num:
+                    break
+
+                if page.locator('[data-testid="content-gate"]').is_visible():
+                    page.locator('[data-testid="content-gate"] button').click()
+                if page.locator("text=Accept all").is_visible():
+                    page.locator("text=Accept all").click()
+
+                if page.locator('text=Accept all').is_visible():
+                    page.locator("text=Accept all").click()
+
+                page.goto(f'https://reddit.com{comment["comment_url"]}')
+
+                page.locator(f"#t1_{comment['comment_id']}").screenshot(
+                    path=f"assets/png/comment_{idx}.png"
+                )
+
+                idx += 1
+
+        elif args_config['mode'] == 'story':
+
+            print_substep("Generating title.png")
+            title_to_png("Posted by " + reddit_object['author'], reddit_object['thread_title'])
+
+            for idx, paragraph in enumerate(reddit_object["thread_selftext"]):
+                text_to_png(paragraph, "comment_" + str(idx))
+
+        else:
+            exit(-1)
 
         # Add transparency
-        if not(args_config['no_transparency']):
+        if not (args_config['no_transparency']):
             print_substep("Applying transparency")
             for l in os.listdir(f"assets/png"):
                 img = cv2.imread(f"assets/png/{l}")

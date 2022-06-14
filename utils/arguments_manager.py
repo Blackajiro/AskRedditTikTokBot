@@ -4,6 +4,8 @@ parser = argparse.ArgumentParser(description="Generates TikTok videos from a spe
                                              " Example: generate.py -u 'reddit.com/thread' -l 30 -t 3 --no-audio",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
+parser.add_argument("-m", "--mode", type=str, help="Mode: ask/story [default=ask]", default="ask")
+
 parser.add_argument("-s", "--source", type=str, help="Subreddit name [default=askreddit]", default="nosleep")
 parser.add_argument("-u", "--url", type=str, help="Direct url")
 parser.add_argument("-t", "--times", type=int, help="Number of videos to generate [default=1]", default=1)
