@@ -1,5 +1,7 @@
 # AskReddit TikTok Bot
 
+Have you ever seen TikToks about reddit threads with Minecraft parkour or other relaxing videos as background? This thing that I made does everything for you, just give it a reddit thread and go get a cofee.
+
 ## Requirements
 
 - Python 3.6+
