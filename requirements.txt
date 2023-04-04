@@ -34,7 +34,6 @@ rich==12.4.4
 six==1.16.0
 toml==0.10.1
 tqdm==4.64.0
-typed-ast==1.4.1
 typing_extensions==4.2.0
 update-checker==0.18.0
 urllib3==1.26.9
@@ -45,7 +44,9 @@ pyttsx3==2.90
 opencv-python==4.5.5.64
 pyinstaller==5.1
 pydub~=0.25.1
-SoundFile=
+SoundFile
 pyrubberband~=0.3.0
 AudioSegment
 nltk~=3.7
+mecab-python3
+TTS==0.12.0

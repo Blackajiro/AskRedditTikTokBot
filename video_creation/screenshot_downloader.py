@@ -107,7 +107,7 @@ def download_screenshots_of_reddit_posts(reddit_object, screenshot_num):
             for comment in reddit_object["comments"]:
 
                 if len(comment["comment_body"]) < args_config['minchars'] or len(comment["comment_body"]) > args_config[
-                    'maxchars']:
+                    'maxchars'] or comment["comment_body"].find('http') != -1:
                     continue
 
                 if idx >= screenshot_num:

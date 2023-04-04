@@ -6,6 +6,8 @@ from pathlib import Path
 from mutagen.mp3 import MP3
 from utils.console import print_step, print_substep
 
+from TTS.api import TTS
+
 from utils.arguments_manager import args_config
 import pyttsx3
 from datetime import datetime
@@ -42,13 +44,18 @@ def do_tts(string, title):
     print_substep('Generating ' + str(title) + '.mp3')
 
     length = 0
+    path = f"assets/mp3/{str(title)}.mp3"
     if os.getenv("TTS_LIBRARY") == 'gtts':
         tts = gTTS(text=string, lang="en")
-        tts.save(f"assets/mp3/{str(title)}.mp3")
-        length = MP3(f"assets/mp3/{str(title)}.mp3").info.length
+        tts.save(path)
+        length = MP3(path).info.length
     elif os.getenv("TTS_LIBRARY") == 'pyttsx3':
         pyttsx3_tts(string, str(title))
-        length = get_mp3_seconds(f"assets/mp3/{str(title)}.mp3")
+        length = get_mp3_seconds(path)
+    elif os.getenv("TTS_LIBRARY") == 'TTS':
+        tts = TTS(model_name=os.getenv("TTS_VOICE"))
+        tts.tts_to_file(text=string, file_path=path)
+        length = get_mp3_seconds(path)
     else:
         print("TTS_LIBRARY not defined")
         exit(-1)
@@ -103,7 +110,7 @@ def save_text_to_mp3(reddit_obj):
                 comment_body = re.sub(r'http\S+', '', comment_body)
 
                 if len(comment_body) < args_config['minchars'] or len(comment_body) > args_config[
-                    'maxchars']:
+                    'maxchars'] or comment_body.find('http') != -1:
                     continue
 
                 length += do_tts(comment_body, idx)

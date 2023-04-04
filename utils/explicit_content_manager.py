@@ -1,6 +1,6 @@
 sexual_words = {
     "sexual experience": "intercourse",
-    "sexual": "",
+    "sexual": "funny",
     "sexy": "tempting",
     "sex": "lovemaking",
     "blowjob": "oral",
@@ -13,7 +13,7 @@ sexual_words = {
     "cum": "semen",
     "squirt": "flow",
     "porn": "lewd",
-    "masturbation": "self-stimulation",
+    "masturbation": "self stimulation",
     "anal": "back",
     "fucking": "flippin",
     "fuck": "lay"

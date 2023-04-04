@@ -23,4 +23,4 @@ Have you ever seen TikToks about reddit threads with Minecraft parkour or other 
 3. Let the script do the magic
 4. Done!
 
-`generate.py -h` for help
+`python3 generate.py -h` for help
